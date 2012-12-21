@@ -1,0 +1,131 @@
+<html>
+<head>
+  <title>Super Share Box Settings</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen">
+  <link href="bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet">
+  <script src="oauth2/oauth2.js"></script>
+  <script src="angular/angular.min.js"></script>
+  <script src="options.js"></script>
+  <style>
+    .i-j-h-ma {
+    background: #1DA1D8;
+    background: -moz-linear-gradient(top,#28AFE7,#1192C8);
+    background: -o-linear-gradient(top,#28AFE7,#1192C8);
+    background: -webkit-gradient(linear,left top,left bottom,from(#28AFE7),to(#1192C8));
+    border: 1px solid #057BAC;
+    border-radius: 3px;
+    display: inline-block;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    color: white;
+    margin: 2px;
+    outline: none;
+    padding: 0 1px;
+    vertical-align: middle;
+    cursor: default;
+    }
+    .i-j-h-ma-ib {
+    display: inline-block;
+    padding: 0 2px 2px 5px;
+    border-top: 1px solid #61C8EE;
+    }
+    .i-j-h-t-pb {
+    background: no-repeat url(sharebox.png) 0 -14px;
+    }
+    .i-j-h-t {
+    background-repeat: no-repeat;
+    display: inline-block;
+    height: 14px;
+    vertical-align: middle;
+    width: 14px;
+    }
+    .i-j-h-ma-x {
+    vertical-align: middle;
+    padding-left: 5px;
+    }
+    .i-j-h-t-oc-rd {
+    height: 17px;
+    width: 14px;
+    }
+    .a-f-e {
+    position: relative;
+    display: -moz-inline-box;
+    display: inline-block;
+    }
+    .i-j-h-t-oc {
+    background: no-repeat url(sharebox.png) -16px -835px;
+    height: 7px;
+    width: 7px;
+    margin: 3px;
+    cursor: pointer;
+    }
+    .i-j-h-t {
+    background-repeat: no-repeat;
+    display: inline-block;
+    height: 14px;
+    vertical-align: middle;
+    width: 14px;
+    }
+  </style>
+</head>
+<body ng-app>
+  <div class="container" ng-controller="Options">
+    <h2>Usage</h2>
+    <p>Just share on Google+ to your circles as normal.</p>
+    <p>Optionally, also add a <span class="i-j-h-ma" id=":b2" style="-webkit-user-select: none;" tabindex="-1"><span class="i-j-h-ma-ib"><span class="i-j-h-t-pb i-j-h-t"></span> <span class="i-j-h-ma-x">FB: ...</span>&nbsp;</span></span> circle or one ore more <span class="i-j-h-ma" id=":b2" style="-webkit-user-select: none;" tabindex="-1"><span class="i-j-h-ma-ib"><span class="i-j-h-t-pb i-j-h-t"></span> <span class="i-j-h-ma-x">FB List: ...</span>&nbsp;</span></span> circles.</p>
+    <p>When you do, Super Share Box will automatically post a link on Facebook to your Google+ post. Remember that the Facebook "circles" just determine who will see the link on Facebook. For them to see the actual post, they must be in one of the Google+ circles you've shared it to.</p>
+    <h2>Settings</h2>
+    <form class="form-horizontal">
+      <fieldset>
+        <legend>Set Up</legend>
+        <div class="control-group">
+          <div class="control-label">FB Friend Lists</div>
+          <div class="controls" ng-hide="friendLists">
+            <button class="btn btn-primary" ng-click="loadLists()" ng-hide="friendLists">Load Lists</button>
+            <span class="help-block" ng-hide="friendLists">Click this button if you want to share to specific Facebook friends (and not just Everyone, Friends of Friends, Friends, and Self).</span>
+          </div>
+          <div class="controls" ng-show="friendLists">
+            <button class="btn btn-primary" ng-click="loadLists()">Reload Lists</button>
+            <div class="row">
+              <div class="span4" style="height:300px;overflow:auto">
+                <h3>Friend Lists</h3>
+                <ul>
+                  <li ng-repeat="friendList in friendLists | orderBy:'name'">{{friendList.name}}</li>
+                </ul>
+              </div>
+              <div class="span4" style="height:300px;overflow:auto">
+                <h3>Friends</h3>
+                <ul>
+                  <li ng-repeat="friend in friends | orderBy:'name'">{{friend.name}}</li>
+                </ul>                
+              </div>
+            </div>
+          </div>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Configuration</legend>
+        <div class="control-group">
+          <div class="controls">
+            <label class="checkbox">
+              <input type="checkbox" ng-model="postSnippet" ng-change="updatePostSnippet()"> Post first 50 characters to Facebook
+            </label>
+            <span class="help-block">Posting a snippet of your Google+ post to Facebook will entice more friends to click over to your Google+ post.</span>
+          </div>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>More</legend>
+        <div class="control-group">
+          <div class="control-label">Follow the author on Google+</div>
+          <div class="controls">
+            <div class="g-plus" data-height="69" data-href="https://plus.google.com/116475614487294923810" data-rel="author"></div>
+            <span class="help-block">I won't be boring.</span>            
+        </div>
+      </fieldset>
+    </form>
+  </div>
+  <script type="text/javascript" src="https://apis.google.com/js/plusone.js"></script>
+</body>
+</html>

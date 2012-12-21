@@ -1,0 +1,50 @@
+{
+    "name": "Super Share Box",
+    "version": "8",
+    "manifest_version": 2,
+
+    "description": "Share links to your Google+ posts on other social networks directly from the share box.",
+
+    "icons": {
+        "16": "icons/icon16.png",
+        "48": "icons/icon48.png",
+        "128": "icons/icon128.png"
+    },
+
+    "background": {
+        "scripts": [ "oauth2/oauth2.js", "fbpost.js" ],
+        "persistent": false
+    },
+
+    "content_scripts": [
+        {
+            "matches": ["https://plus.google.com/_/scs/apps-static/_/js/*"],
+            "js": ["main.js"],
+            "all_frames": true,
+            "run_at": "document_start"
+        },
+        {
+            "matches": ["https://plus.google.com/*"],
+            "js": ["main.js"],
+            "run_at": "document_start"
+        },
+        {
+            "matches": ["https://www.facebook.com/connect/login_success.html"],
+            "js": ["oauth2/oauth2_inject.js"],
+            "run_at": "document_start"
+        }
+    ],
+
+    "content_security_policy": "script-src 'self' 'unsafe-eval' https://ssl.google-analytics.com  https://apis.google.com; object-src 'self'; img-src 'self' https://graph.facebook.com https://ssl.google-analytics.com",
+
+    "web_accessible_resources": [
+        "inject.js"
+    ],
+
+    "options_page": "options.html",
+
+    "permissions": [
+        "storage",
+        "https://graph.facebook.com/"
+    ]
+}
