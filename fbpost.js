@@ -89,13 +89,9 @@ function makePost(request) {
     xhr.open('POST', 'https://graph.facebook.com/me/feed', true);
     xhr.setRequestHeader('Content-Type', 'application/json');
     xhr.setRequestHeader('Authorization', 'OAuth ' + facebook.getAccessToken());
-    chrome.storage.sync.get('postSnippet', function(items) {
-        var message = (items.postSnippet === false)
-            ? 'I made a post on Google+.'
-            : cutString(request.postText, 20);
-        var data = 'link=' + encodeURIComponent(request.postLink) + '&name=' + encodeURIComponent(request.linkHeadline || (request.user + ' ' + new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString())) + '&caption=' + encodeURIComponent(request.postLink) + '&message=' + encodeURIComponent(message) + '&privacy=' + encodeURIComponent(privacyString(request.privacy,request.friendLists)) + '&picture=' + encodeURIComponent(request.linkPic || request.pic) + '&description=' + encodeURIComponent(request.linkDescription || 'Click this link to read the full post on Google+');
-        xhr.send(data);
-    });
+    var message = cutString(request.postText, 20);
+    var data = 'link=' + encodeURIComponent(request.postLink) + '&name=' + encodeURIComponent(request.linkHeadline || (request.user + ' ' + new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString())) + '&caption=' + encodeURIComponent(request.postLink) + '&message=' + encodeURIComponent(message) + '&privacy=' + encodeURIComponent(privacyString(request.privacy,request.friendLists)) + '&picture=' + encodeURIComponent(request.linkPic || request.pic) + '&description=' + encodeURIComponent(request.linkDescription || 'Click this link to read the full post on Google+');
+    xhr.send(data);
 }
 
 chrome.extension.onMessage.addListener(
