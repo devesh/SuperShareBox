@@ -128,7 +128,7 @@ var XMLHttpRequestWrapper = function()
             post.privacy = privacy;
             post.friendLists = friendLists;
             post.user = postDetails[3];
-            post.postText = postDetails[4];
+            post.postText = postDetails[14];
             if (postDetails[11].length > 0) {
                 post.linkHeadline = postDetails[11][0][3];
                 post.linkDescription = postDetails[11][0][21];
