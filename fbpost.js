@@ -17,8 +17,13 @@ function privacyString(privacy, friendLists) {
 }
 
 function cutString(s, n) {
-    var cut= s.indexOf(' ', n);
-    if(cut== -1) return s;
+    if (s.length <= n) {
+        return s;
+    }
+    var cut = s.indexOf(' ', n);
+    if (cut == -1) {
+        cut = n;
+    }
     return s.substring(0, cut) + '...';
 }
 
@@ -89,7 +94,7 @@ function makePost(request) {
     xhr.open('POST', 'https://graph.facebook.com/me/feed', true);
     xhr.setRequestHeader('Content-Type', 'application/json');
     xhr.setRequestHeader('Authorization', 'OAuth ' + facebook.getAccessToken());
-    var message = cutString(request.postText, 20);
+    var message = cutString(request.postText || '', 20);
     var data = 'link=' + encodeURIComponent(request.postLink) + '&name=' + encodeURIComponent(request.linkHeadline || (request.user + ' ' + new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString())) + '&caption=' + encodeURIComponent(request.postLink) + '&message=' + encodeURIComponent(message) + '&privacy=' + encodeURIComponent(privacyString(request.privacy,request.friendLists)) + '&picture=' + encodeURIComponent(request.linkPic || request.pic) + '&description=' + encodeURIComponent(request.linkDescription || 'Click this link to read the full post on Google+');
     xhr.send(data);
 }

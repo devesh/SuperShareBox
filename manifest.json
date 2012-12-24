@@ -45,6 +45,7 @@
 
     "permissions": [
         "storage",
+        "tabs",
         "https://graph.facebook.com/"
     ]
 }
