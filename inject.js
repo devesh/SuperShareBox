@@ -124,7 +124,7 @@ var XMLHttpRequestWrapper = function()
         if (isPost) {
             var createdPost = eval(xhrRequest.responseText.substring(xhrRequest.responseText.indexOf('[')));
             var postDetails = createdPost[0][1][1][0][0];
-            var post = {};
+            var post = { type: 'SSB_POST' };
             post.privacy = privacy;
             post.friendLists = friendLists;
             post.user = postDetails[3];

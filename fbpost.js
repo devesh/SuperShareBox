@@ -101,5 +101,7 @@ function makePost(request) {
 
 chrome.extension.onMessage.addListener(
     function(request, sender, sendResponse) {
-        facebook.authorize(function() { makePost(request) });
+        if (request.type == 'SSB_POST') {
+            facebook.authorize(function() { makePost(request) });
+        }
     });
