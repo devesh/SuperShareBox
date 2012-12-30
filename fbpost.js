@@ -32,6 +32,9 @@ var facebook = new OAuth2('facebook', {
     api_scope: 'publish_stream,read_friendlists,read_stream'
 });
 
+// If a user doesn't allow Super Share Box to post to their stream publicly, the people that the user
+// requested to get a link might not get it. Verify that the right people got the link, and if not, prompt
+// the user to allow Super Share Box to post publicly.
 function verifyPost(postId, privacy, friendLists) {
     var xhr = new XMLHttpRequest();
     xhr.onload = function() {
