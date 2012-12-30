@@ -13,3 +13,11 @@ The code is currently very hacky. A few next steps:
 - Localization.
 - UI cleanup.
 - Delete corresponding Facebook post when the user deletes a Google+ post.
+- Firefox extension
+
+Development
+===========
+
+Developing Chrome extensions is very easy.
+Just go to [Three bars (formerly wrench)] -> Tools -> Extensions -> Load Unpacked Extension and choose the directory
+containing this code. Open the files in an editor, make changes, and just refresh the Google+ tab when you're done.
