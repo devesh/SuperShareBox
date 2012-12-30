@@ -1,7 +1,8 @@
 {
     "name": "Super Share Box",
-    "version": "13",
+    "version": "14",
     "manifest_version": 2,
+    "minimum_chrome_version": "23",
 
     "description": "Share links to your Google+ posts on other social networks directly from the share box.",
 
