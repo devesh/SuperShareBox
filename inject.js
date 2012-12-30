@@ -159,6 +159,8 @@ if (!_XMLHttpRequest) {
         this.open = function(method, url, async, user, password) {
             updateSelfProperties();
             synchronous = !async;
+            // If I don't copy url before calling indexOf, the onepick dialog doesn't work.
+            // I don't know why.
             var uri = url.toString();
             if (uri.indexOf('_/sharebox/post') == 0) {
                 isPost = true;
