@@ -6,7 +6,10 @@ Wraps the post message XHR to determine whether the post should be shared to tho
 Posts links to the Google+ post on the other social networks.
 
 The code is currently very hacky. A few next steps:
-- Clean up the code, especially the hacked-together oauth code mangled from the [oauth2-extensions](https://github.com/borismus/oauth2-extensions) repository by Boris Smus and the XHR wrapper that does everything.
+- Clean up the code, especially the hacked-together oauth code mangled from the
+  [oauth2-extensions](https://github.com/borismus/oauth2-extensions) repository by Boris Smus and the XHR wrapper hacked
+  out of [Firebug Lite](http://code.google.com/p/fbug/source/browse/lite/branches/firebug1.5/content/lite/xhr.js) that
+  does everything.
 - Add more social networks.
 - Fix the hovercard for external "circles"
 - Remove external "circles" from places they don't belong, like the circles editor.
