@@ -18,6 +18,10 @@ The code is currently very hacky. A few next steps:
 - Delete corresponding Facebook post when the user deletes a Google+ post.
 - Firefox extension
 
+Installing
+==========
+[Get it here.](https://chrome.google.com/webstore/detail/super-share-box/flndhlfpginekiffiffkmmaajgaagolk)
+
 Development
 ===========
 
