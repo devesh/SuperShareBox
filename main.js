@@ -1,9 +1,11 @@
-chrome.storage.sync.get(['friendLists', 'friends'], function(items) {
-    var fl = document.createElement('script');
-    fl.innerText = 'var ssbFriendLists = ' + JSON.stringify(items.friendLists || [])
-        + ';var ssbFriends = ' + JSON.stringify(items.friends || []) + ';';
-    document.documentElement.insertBefore(fl, document.documentElement.firstChild);
-    fl.parentNode.removeChild(fl);
+readFriends(function(friends) {
+    chrome.storage.sync.get('friendLists', function(items) {
+        var fl = document.createElement('script');
+        fl.innerText = 'var ssbFriendLists = ' + JSON.stringify(items.friendLists || [])
+            + ';var ssbFriends = ' + JSON.stringify(friends) + ';';
+        document.documentElement.insertBefore(fl, document.documentElement.firstChild);
+        fl.parentNode.removeChild(fl);
+    });
 });
 
 var s = document.createElement('script');

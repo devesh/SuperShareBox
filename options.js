@@ -4,8 +4,17 @@ function Options($scope, $http) {
         api_scope: 'publish_stream,read_friendlists,read_stream'
     });
 
-    $scope.updatePostSnippet = function() {
-        chrome.storage.sync.set({postSnippet: $scope.postSnippet});
+    // Chrome's sync storage has a limit of 4KiB per item. Break the friends list
+    // into chunks of 50.
+    function writeFriends(friends) {
+        var friendData = {};
+        friendData.friendChunks = Math.ceil(friends.length / 50);
+        // friends instead of friends1 for backwards-compatibility.
+        friendData.friends = friends.slice(0, 50);
+        for (var i = 1; i < friendData.friendChunks; ++i) {
+            friendData['friends' + (i+1)] = friends.slice(i * 50, (i+1) * 50);
+        }
+        chrome.storage.sync.set(friendData);
     }
 
     function loadFriends() {
@@ -22,14 +31,14 @@ function Options($scope, $http) {
 
         $http.get('https://graph.facebook.com/me/friends',
                   { headers : { Authorization : 'OAuth ' + facebook.getAccessToken() } })
-            .success(function(data) {
-                $scope.friends = data.data;
-                chrome.storage.sync.set({ "friends":  $scope.friends });
+            .success(function(friendsResponse) {
+                writeFriends(friendsResponse.data);
                 $http.get('https://graph.facebook.com/me/friendlists',
                           { headers : { Authorization : 'OAuth ' + facebook.getAccessToken() } })
-                    .success(function(data) {
-                        $scope.friendLists = data.data;
-                        chrome.storage.sync.set({ "friendLists":  $scope.friendLists });
+                    .success(function(friendlistsResponse) {
+                        chrome.storage.sync.set({'friendLists': friendlistsResponse.data });
+                        $scope.friends = friendsResponse.data;
+                        $scope.friendLists = friendlistsResponse.data;
                     }).error(handleError);
             }).error(handleError);
     }
@@ -38,10 +47,13 @@ function Options($scope, $http) {
         facebook.authorize(loadFriends);
     };
 
-    chrome.storage.sync.get(['friendLists', 'friends', 'postSnippet'], function(items) {
+    chrome.storage.sync.get('friendLists', function(items) {
         $scope.friendLists = items.friendLists;
-        $scope.friends = items.friends;
-        $scope.postSnippet = (items.postSnippet !== false);
+        $scope.$apply();
+    });
+
+    readFriends(function(friends) {
+        $scope.friends = friends;
         $scope.$apply();
     });
 }
