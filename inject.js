@@ -118,6 +118,22 @@ if (!_XMLHttpRequest) {
 
         this.onreadystatechange = function(){};
 
+        var entityMap = {
+                '&amp;': '&',
+                '&lt;': '<',
+                '&gt;': '>',
+                '&quot;': '"',
+                '&#39;': "'",
+                '&#47;': '/'
+        };
+        var entityRegex = new RegExp('(' + Object.keys(entityMap).join('|') + ')', 'g');
+        var unescape = function(string) {
+            if (string == null) return '';
+            return ('' + string).replace(entityRegex, function(match) {
+                return entityMap[match];
+            });
+        };
+
         var finishXHR = function() {
             if (isPost) {
                 var createdPost = eval(xhrRequest.responseText.substring(xhrRequest.responseText.indexOf('[')));
@@ -126,15 +142,18 @@ if (!_XMLHttpRequest) {
                 post.privacy = privacy;
                 post.friendLists = friendLists;
                 post.user = postDetails[3];
-                post.postText = postDetails[14];
+                post.postText = postDetails[48] || postDetails[14];
                 if (postDetails[11].length > 0) {
-                    post.linkHeadline = postDetails[11][0][3];
-                    post.linkDescription = postDetails[11][0][21];
-                    if (postDetails[11].length > 1) {
+                    post.linkHeadline = unescape(postDetails[11][0][3]);
+                    post.linkDescription = unescape(postDetails[11][0][21]);
+                    if (((postDetails[11][1] || [])[41] || [])[0]) {
                         post.linkPic = postDetails[11][1][41][0][1];
                     }
                 }
-                post.pic = 'https:' + (postDetails[18] || '//lh5.googleusercontent.com/E4Mt_NjeN66Z1TAHbfRB5NuBDHlGbxr6eIoe5EPvZmM3QJmk9cWEOv1MKTyuM0iM0HYjnHjT');
+                post.pic = (postDetails[18] || '//lh5.googleusercontent.com/E4Mt_NjeN66Z1TAHbfRB5NuBDHlGbxr6eIoe5EPvZmM3QJmk9cWEOv1MKTyuM0iM0HYjnHjT');
+                if (post.pic.indexOf('http') != 0) {
+                    post.pic = 'https:' + post.pic;
+                }
                 post.postLink = 'https://plus.google.com/' + postDetails[21];
                 if (privacy || friendLists.length) {
                     window.postMessage(post, '*');
