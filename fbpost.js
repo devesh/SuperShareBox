@@ -63,7 +63,9 @@ function verifyPost(postId, privacy, friendLists) {
             }
         } else if (xhr.status == 400 || xhr.status == 401 || xhr.status == 403) {
             if (confirm("Post to Facebook failed. Please authorize Super Share Box to access Facebook and accept *all* permissions.")) {
-                facebook.authorize(function() { verifyPost(postId) }, true);
+                facebook.authorize(function() {
+                    verifyPost(postId, privacy, friendLists);
+                }, true);
             }
         } else {
             // TODO: Handle other errors.
@@ -81,9 +83,11 @@ function makePost(request) {
     xhr.onload = function() {
         _gaq.push(['_trackEvent', 'Facebook', 'Share', xhr.status.toString()]);
         if(xhr.status == 200) {
-            // If Facebook was supposed to post it to more than just ourselves, make sure it did.
+            // If Facebook was supposed to post it to more than just ourselves, make sure it did after waiting for the post to propagate
             if (request.privacy != 'SELF') {
-                verifyPost(JSON.parse(xhr.responseText).id, request.privacy, request.friendLists);
+                setTimeout(function() {
+                    verifyPost(JSON.parse(xhr.responseText).id, request.privacy, request.friendLists);
+                }, 5000);
             }
         } else if (xhr.status == 401 || xhr.status == 403) {
             if (confirm("Post to Facebook failed. Please reauthorize Super Share Box to access Facebook and accept all permissions.")) {
