@@ -1,6 +1,6 @@
 {
     "name": "Super Share Box",
-    "version": "17",
+    "version": "18",
     "manifest_version": 2,
     "minimum_chrome_version": "23",
 
@@ -19,7 +19,7 @@
 
     "content_scripts": [
         {
-            "matches": ["https://plus.google.com/_/scs/apps-static/_/js/*", "https://plusone.google.com/*_/+1/*"],
+            "matches": ["https://plus.google.com/_/scs/apps-static/_/js/*", "https://plusone.google.com/*_/+1/*", "https://plus.google.com/*_/notifications/*"],
             "js": ["readfriends.js", "main.js"],
             "all_frames": true,
             "run_at": "document_start"
