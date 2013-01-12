@@ -39,8 +39,8 @@ if (!_XMLHttpRequest) {
             return [[id], [name,,,,,,,,,2,2,,noidea,0,1,1]];
         }
 
-        var makeFriend = function(id, name,pic) {
-            return [[,,id],[],[name,,,,,,,,pic]];
+        var makeFriend = function(id, name, pic) {
+            return [[,,id],[],[name,,,,,,,,pic],[[2,,['fblist:ALL_FRIENDS']]]];
         }
 
         var updateSelfProperties = function() {
