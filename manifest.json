@@ -1,6 +1,6 @@
 {
     "name": "Super Share Box",
-    "version": "19",
+    "version": "20",
     "manifest_version": 2,
     "minimum_chrome_version": "23",
 
@@ -13,20 +13,26 @@
     },
 
     "background": {
-        "scripts": [ "oauth2/oauth2.js", "fbpost.js" ],
-        "persistent": false
+        "page": "background.html",
+        // I need to prompt the user for action from the background page, and I need to keep the
+        //  background page open while I do that. Unfortunately, the chrome notifications API that
+        // the documentation suggests for doing that from an event page only works on Windows and
+        // CrOS.
+        // The Chrome manifest parser now supports comments, even though they are not allowed in the
+        // JSON spec. Hooray!
+        "persistent": true
     },
 
     "content_scripts": [
         {
             "matches": ["https://plus.google.com/_/scs/apps-static/_/js/*", "https://plusone.google.com/*_/+1/*", "https://plus.google.com/*_/notifications/*"],
-            "js": ["readfriends.js", "main.js"],
+            "js": ["js/main.js"],
             "all_frames": true,
             "run_at": "document_start"
         },
         {
             "matches": ["https://plus.google.com/*"],
-            "js": ["readfriends.js", "main.js"],
+            "js": ["js/main.js"],
             "run_at": "document_start"
         },
         {
@@ -36,10 +42,14 @@
         }
     ],
 
-    "content_security_policy": "script-src 'self' 'unsafe-eval' https://ssl.google-analytics.com  https://apis.google.com; object-src 'self'; img-src 'self' https://graph.facebook.com https://ssl.google-analytics.com",
+    // The Google+ follow button on the options page needs javascript from apis.google.com that
+    // creates a frame for that domain and accounts.google.com, uses inline styles, loads images
+    // from ssl.gstatic.com, and makes requests to www.google-analytics.com
+    // The extension sends requests to graph.facebook.com and api.twitter.com.
+    "content_security_policy": "script-src 'self' https://apis.google.com; frame-src 'self' https://apis.google.com https://accounts.google.com; style-src 'self' 'unsafe-inline'; img-src 'self' https://ssl.gstatic.com; connect-src https://www.google-analytics.com https://graph.facebook.com https://api.twitter.com; default-src 'self'",
 
     "web_accessible_resources": [
-        "inject.js"
+        "js/inject.js"
     ],
 
     "options_page": "options.html",
@@ -47,6 +57,8 @@
     "permissions": [
         "storage",
         "tabs",
-        "https://graph.facebook.com/"
+        "https://graph.facebook.com/",
+        "https://api.twitter.com/",
+        "https://www.google-analytics.com/"
     ]
 }

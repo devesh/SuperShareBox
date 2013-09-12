@@ -1,9 +1,56 @@
 // Injected onto the page.
-if (!_XMLHttpRequest) {
-    var XMLHttpRequestWrapper = function()
-    {
+(function(window) {
+    /**
+     * All the details about a post.
+     *
+     * @constructor
+     * @struct
+     * @param {string} postUrl The url of this post.
+     * @param {string} text The text of the post.
+     * @param {string} user The name of the poster.
+     * @param {string} userPicUrl An image URL for the poster's profile picture.
+     * @param {Array.<string>} people The ids of people to share the post with
+     * @param {string=} linkUrl The link URL if the post contains a link.
+     * @param {string=} linkHeadline The link headline if the post contains a link.
+     * @param {string=} linkDescription The link description text if the post contains a link.
+     * @param {string=} linkPic An image URL from the link if the post contains a link.
+     */
+    function SSBPost(postUrl, text, user, userPicUrl, people, linkUrl, linkHeadline, linkDescription, linkPic) {
+        this.postUrl = postUrl;
+        this.text = text;
+        this.user = user;
+        this.userPicUrl = userPicUrl;
+        this.people = people;
+        this.linkUrl = linkUrl;
+        this.linkHeadline = linkHeadline;
+        this.linkDescription = linkDescription;
+        this.linkPic = linkPic;
+    }
+
+    var XMLHttpRequestWrapper = function() {
         function isFunction(object) {
             return typeof(object) == 'function';
+        }
+
+        // Communication with the content script.
+        var callbacks = {};
+        window.addEventListener('message', function(event) {
+            // We only accept messages from ourselves for requests that we sent.
+            if (event.source != window || !event.data.responseId || !callbacks[event.data.responseId])
+                return;
+
+            callbacks[event.data.responseId](event.data.response);
+            delete callbacks[event.data.responseId];
+        });
+        function callExtension(message, callback) {
+            var post = {
+                messageId: Math.random(),
+                message: message
+            };
+            if (callback) {
+                callbacks[post.messageId] = callback;
+            }
+            window.postMessage(post, '*');
         }
 
         // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -14,8 +61,10 @@ if (!_XMLHttpRequest) {
         synchronous = false,
         isPost = false,
         isCircles = false,
-        friendLists = [],
-        privacy;
+        friends = [],
+        friendsToAdd,
+        friendListsToAdd,
+        circlesResponse;
 
         // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
         // XMLHttpRequestWrapper internal methods
@@ -34,13 +83,38 @@ if (!_XMLHttpRequest) {
             setRequestHeader: 1
         };
 
-        var makeCircle = function(id, name, noidea) {
-            // I have no idea what that third argument is for.
-            return [[id], [name,,,,,,,,,2,2,,noidea,0,1,1]];
+        var makeCircle = function(id, name) {
+            return [[id], [name,,,,,,,,,2,2,,'z' + id,0,1,1]];
         }
 
-        var makeFriend = function(id, name, pic) {
-            return [[,,id],[],[name,,,,,,,,pic],[[2,,['fblist:ALL_FRIENDS']]]];
+        var makeFriend = function(id, name, friendLists, pic) {
+            var friend = [[,,id],[],[name,,,,,,,,pic],[]];
+            for (var i = friendLists.length; --i >= 0;) {
+                friend[3].push([2,,[friendLists[i]]]);
+            }
+            return friend;
+        }
+
+        var readyToProcessCircles = function() {
+            return (friendsToAdd && friendListsToAdd && circlesResponse);
+        }
+
+        var finishCircles = function() {
+            if (readyToProcessCircles()) {
+                var startIndex = circlesResponse.indexOf('[');
+                var circles = eval(circlesResponse.substring(startIndex));
+                for (var i = friendsToAdd.length; --i >= 0;) {
+                    var friend = friendsToAdd[i];
+                    circles[0][1][2].push(makeFriend(friend.id, friend.name, friend.friendLists, friend.picUrl));
+                }
+                for (var i = friendListsToAdd.length; --i >= 0;) {
+                    var friendList = friendListsToAdd[i];
+                    circles[0][1][1].push(makeCircle(friendList.id, friendList.name));
+                }
+                self.responseText = self.response = circlesResponse.substring(0, startIndex) + JSON.stringify(circles);
+                self.readyState = 4;
+                self.onreadystatechange();
+            }
         }
 
         var updateSelfProperties = function() {
@@ -51,30 +125,18 @@ if (!_XMLHttpRequest) {
                 try {
                     var propValue = xhrRequest[propName];
                     if (propValue && !isFunction(propValue)) {
-                        if (isCircles && (propName == 'responseText' || propName == 'response')) {
-                            var startIndex = propValue.indexOf('[');
-                            var circles = eval(propValue.substring(startIndex));
-                            var publicCircle = makeCircle('fbstandard:EVERYONE', 'FB Group: Public', 'zfbpublic');
-                            var friendsCircle = makeCircle('fblist:ALL_FRIENDS', 'FB Group: Friends', 'zfbfriends');
-                            var fofCircle = makeCircle('fblist:FRIENDS_OF_FRIENDS', 'FB Group: Friends of Friends', 'zfbfof');
-                            var selfCircle = makeCircle('fbstandard:SELF', 'FB Group: Self', 'zfbself');
-                            circles[0][1][1].push(publicCircle, friendsCircle, fofCircle, selfCircle);
-                            for (var i = ssbFriendLists.length; --i >= 0;) {
-                                circles[0][1][1].push(makeCircle('fblist:' + ssbFriendLists[i].id, 'FB List: ' + ssbFriendLists[i].name, 'zfb' + ssbFriendLists[i].id));
-                            }
-                            for (var i = ssbFriends.length; --i >= 0;) {
-                                circles[0][1][2].push(makeFriend('fb:'+ssbFriends[i].id, 'FB: ' + ssbFriends[i].name, 'https://graph.facebook.com/' + ssbFriends[i].id + '/picture'));
-                            }
-                            self[propName] = propValue.substring(0, startIndex) + JSON.stringify(circles);
-                        } else {
-                            self[propName] = propValue;
-                        }
+                        self[propName] = propValue;
                     }
                 }
                 catch(E)
                 {
                     console.log(propName, E.message);
                 }
+            }
+            if (isCircles && self.readyState == 4) {
+                self.readyState = 3;
+                circlesResponse = self.responseText;
+                finishCircles();
             }
         };
         
@@ -135,29 +197,30 @@ if (!_XMLHttpRequest) {
         };
 
         var finishXHR = function() {
-            if (isPost) {
+            if (isPost && friends.length) {
                 var createdPost = eval(xhrRequest.responseText.substring(xhrRequest.responseText.indexOf('[')));
                 var postDetails = createdPost[0][1][1][0][0];
-                var post = { type: 'SSB_POST' };
-                post.privacy = privacy;
-                post.friendLists = friendLists;
-                post.user = postDetails[3];
-                post.postText = postDetails[48] || postDetails[14];
+                var userPicUrl = postDetails[18] || '//lh5.googleusercontent.com/E4Mt_NjeN66Z1TAHbfRB5NuBDHlGbxr6eIoe5EPvZmM3QJmk9cWEOv1MKTyuM0iM0HYjnHjT';
+                if (userPicUrl.indexOf('http') != 0) {
+                    userPicUrl = 'https:' + userPicUrl;
+                }
+                // 14 has the text with referenced people turned into @ strings.
+                // 20 has the visible text (instead of @ strings).
+                // 48 has the user's comment for a reshared post with referenced people turned into @ strings.
+                // 47 has the user's comment for a reshared post marked up with HTML
+                var post = new SSBPost('https://plus.google.com/' + postDetails[21], postDetails[47] ? postDetails[47].replace(/(<([^>]+)>)/ig,'') : postDetails[20], postDetails[3], userPicUrl, friends);
                 if (postDetails[11].length > 0) {
                     post.linkHeadline = unescape(postDetails[11][0][3]);
                     post.linkDescription = unescape(postDetails[11][0][21]);
                     if (((postDetails[11][1] || [])[41] || [])[0]) {
+                        // This is where pictures shared from normal web pages go.
                         post.linkPic = postDetails[11][1][41][0][1];
+                    } else if ((postDetails[11][0][41] || [])[0]) {
+                        // This is where YouTube thumbnail pictures and pictures from reshares go.
+                        post.linkPic = postDetails[11][0][41][0][1];
                     }
                 }
-                post.pic = (postDetails[18] || '//lh5.googleusercontent.com/E4Mt_NjeN66Z1TAHbfRB5NuBDHlGbxr6eIoe5EPvZmM3QJmk9cWEOv1MKTyuM0iM0HYjnHjT');
-                if (post.pic.indexOf('http') != 0) {
-                    post.pic = 'https:' + post.pic;
-                }
-                post.postLink = 'https://plus.google.com/' + postDetails[21];
-                if (privacy || friendLists.length) {
-                    window.postMessage(post, '*');
-                }
+                callExtension(post);
             }
             updateSelfProperties();
         };
@@ -185,6 +248,14 @@ if (!_XMLHttpRequest) {
                 isPost = true;
             } else if (uri.indexOf('socialgraph/lookup/circles') >= 0) {
                 isCircles = true;
+                callExtension('GET_FRIENDS', function(friends) {
+                    friendsToAdd = friends;
+                    finishCircles();
+                });
+                callExtension('GET_FRIENDLISTS', function(friendLists) {
+                    friendListsToAdd = friendLists;
+                    finishCircles();
+                });
             } // TODO(devesh): Also handle socialgraph/lookup/hovercards.
             try {
                 xhrRequest.open.apply(xhrRequest, arguments);
@@ -203,36 +274,23 @@ if (!_XMLHttpRequest) {
                 var postData = JSON.parse(decodeURIComponent(keyValue[1]));
                 // For some reason, people shares are put in both postData[10] and postData[37][0].
                 for (var i = postData[10].length; --i >= 0;) {
-                    if ((postData[10][i] || [,''])[1].indexOf('fb:') == 0) {
+                    if ((postData[10][i] || [,''])[1].indexOf(':') >= 0) {
                         postData[10].splice(i, 1);
                     }
                 }
                 // People and circle shares are in postData[37][0].
+                // Add the other networks' people and circles to friends, and remove them from the request, so Google+ doesn't see them.
                 for (var i = postData[37][0].length; --i >= 0;) {
-                    if ((postData[37][0][i][1] || '').indexOf('fbstandard:') == 0) {
-                        if (privacy) {
-                            privacy = 'EVERYONE';
-                        } else {
-                            privacy = postData[37][0][i][1].substring(11);
-                        }
+                    if ((postData[37][0][i][1] || '').indexOf(':') >= 0) {
+                        friends.push(postData[37][0][i][1]);
                         postData[37][0].splice(i, 1);
-                    } else if ((postData[37][0][i][1] || '').indexOf('fblist:') == 0) {
-                        friendLists.push(postData[37][0][i][1].substring(7));
+                    } else if ((postData[37][0][i][0] || [,,''])[2].indexOf(':') >= 0) {
+                        friends.push(postData[37][0][i][0][2]);
                         postData[37][0].splice(i, 1);
-                    } else if ((postData[37][0][i][0] || [,,''])[2].indexOf('fb:') == 0) {
-                        friendLists.push(postData[37][0][i][0][2].substring(3));
-                        postData[37][0].splice(i, 1);
-                    }
-                }
-                if (friendLists.length > 0) {
-                    if (privacy === 'SELF') {
-                        privacy = undefined;
-                    } else if (privacy === 'EVERYONE') {
-                        friendLists.length = 0;
                     }
                 }
                 if (postData[37][0].length == 0) {
-                    alert('You must share to at least one non-Facebook circle to make the post visible on Google+.');
+                    alert('You must share to at least one Google+ circle to make the post visible.');
                     self.readyState = 4;
                     self.status = 400;
                     self.responseText = self.response = 'Invalid';
@@ -306,4 +364,4 @@ if (!_XMLHttpRequest) {
     window.XMLHttpRequest = function() {
         return new XMLHttpRequestWrapper();
     };
-}
+})(window);

@@ -1,107 +1,53 @@
+<!doctype html>
 <html>
 <head>
   <title>Super Share Box Settings</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen">
   <link href="bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet">
-  <script src="oauth2/oauth2.js"></script>
   <script src="angular/angular.min.js"></script>
-  <script src="readfriends.js"></script>
-  <script src="options.js"></script>
-  <style>
-    .i-j-h-ma {
-    background: #1DA1D8;
-    background: -moz-linear-gradient(top,#28AFE7,#1192C8);
-    background: -o-linear-gradient(top,#28AFE7,#1192C8);
-    background: -webkit-gradient(linear,left top,left bottom,from(#28AFE7),to(#1192C8));
-    border: 1px solid #057BAC;
-    border-radius: 3px;
-    display: inline-block;
-    -moz-border-radius: 3px;
-    -webkit-border-radius: 3px;
-    color: white;
-    margin: 2px;
-    outline: none;
-    padding: 0 1px;
-    vertical-align: middle;
-    cursor: default;
-    }
-    .i-j-h-ma-ib {
-    display: inline-block;
-    padding: 0 2px 2px 5px;
-    border-top: 1px solid #61C8EE;
-    }
-    .i-j-h-t-pb {
-    background: no-repeat url(sharebox.png) 0 -14px;
-    }
-    .i-j-h-t {
-    background-repeat: no-repeat;
-    display: inline-block;
-    height: 14px;
-    vertical-align: middle;
-    width: 14px;
-    }
-    .i-j-h-ma-x {
-    vertical-align: middle;
-    padding-left: 5px;
-    }
-    .i-j-h-t-oc-rd {
-    height: 17px;
-    width: 14px;
-    }
-    .a-f-e {
-    position: relative;
-    display: -moz-inline-box;
-    display: inline-block;
-    }
-    .i-j-h-t-oc {
-    background: no-repeat url(sharebox.png) -16px -835px;
-    height: 7px;
-    width: 7px;
-    margin: 3px;
-    cursor: pointer;
-    }
-    .i-j-h-t {
-    background-repeat: no-repeat;
-    display: inline-block;
-    height: 14px;
-    vertical-align: middle;
-    width: 14px;
-    }
-  </style>
+  <script src="underscore/underscore-min.js"></script>
+  <script src="oauth2/oauth2.js"></script>
+  <script src="oauth/chrome_ex_oauthsimple.js"></script>
+  <script src="oauth/chrome_ex_oauth.js"></script>
+  <script src="ga/google-analytics-bundle.js"></script>
+  <script src="js/background.js"></script>
+  <script src="js/options.js"></script>
 </head>
-<body ng-app>
-  <div class="container" ng-controller="Options">
+<body ng-app="Options" ng-csp>
+  <div class="container" ng-controller="OptionsCtrl">
     <h2>Usage</h2>
     <p>Just share on Google+ to your circles as normal.</p>
-    <p>Optionally, also add a <span class="i-j-h-ma" id=":b2" style="-webkit-user-select: none;" tabindex="-1"><span class="i-j-h-ma-ib"><span class="i-j-h-t-pb i-j-h-t"></span> <span class="i-j-h-ma-x">FB: ...</span>&nbsp;</span></span> circle or one ore more <span class="i-j-h-ma" id=":b2" style="-webkit-user-select: none;" tabindex="-1"><span class="i-j-h-ma-ib"><span class="i-j-h-t-pb i-j-h-t"></span> <span class="i-j-h-ma-x">FB List: ...</span>&nbsp;</span></span> circles.</p>
-    <p>When you do, Super Share Box will automatically post a link on Facebook to your Google+ post. Remember that the Facebook "circles" just determine who will see the link on Facebook. For them to see the actual post, they must be in one of the Google+ circles you've shared it to.</p>
+    <p>Optionally, also add a friend or circle from your other social networks like <img src="examplechip.png" width="150"/></p>
+    <p>When you do, Super Share Box will automatically post a link on that other social network to your Google+ post. Remember that the "circles" from other social networks just determine who will see the link to this post on that other social network. For them to see the actual post, they must be in one of the Google+ circles you've shared it to.</p>
     <h2>Settings</h2>
-    <form class="form-horizontal">
+    <form name="settingsForm" class="form-horizontal">
       <fieldset>
-        <legend>Set Up</legend>
+        <legend>Share Settings</legend>
         <div class="control-group">
-          <div class="control-label">FB Friend Lists</div>
-          <div class="controls" ng-hide="friendLists">
-            <button class="btn btn-primary" ng-click="loadLists()" ng-hide="friendLists">Load Lists</button>
-            <span class="help-block" ng-hide="friendLists">Click this button if you want to share to specific Facebook friends (and not just Everyone, Friends of Friends, Friends, and Self).</span>
+          <div class="control-label">Enabled Networks</div>
+          <div class="controls">
+            <label class="checkbox" ng-repeat="network in networks">
+              <input type="checkbox" ng-model="network.enabled" ng-change="setNetworkEnabled(network.id, network.enabled)"> {{network.name}}
+            </label>
           </div>
-          <div class="controls" ng-show="friendLists">
-            <button class="btn btn-primary" ng-click="loadLists()">Reload Lists</button>
-            <div class="row">
-              <div class="span4" style="height:300px;overflow:auto">
-                <h3>Friend Lists</h3>
-                <ul>
-                  <li ng-repeat="friendList in friendLists | orderBy:'name'">{{friendList.name}}</li>
-                </ul>
-              </div>
-              <div class="span4" style="height:300px;overflow:auto">
-                <h3>Friends</h3>
-                <ul>
-                  <li ng-repeat="friend in friends | orderBy:'name'">{{friend.name}}</li>
-                </ul>                
-              </div>
-            </div>
+        </div>
+        <div class="control-group">
+          <div class="control-label">Post Truncation</div>
+          <div class="controls">
+            <label class="checkbox"><input type="checkbox" ng-model="truncate" ng-change="setTruncateLength()"/> Truncate Posts</label>
+            <label class="text" ng-show="truncate">Characters: <input type="number" ng-model="truncateLength" ng-enabled="truncate" min="1" max="100000" class="input-small" ng-required="truncate" ng-change="setTruncateLength()"></label>
+            <span class="help-block">If you want to increase interactions on Google+, you should truncate the posts you share to the other social networks to give the viewers an incentive to click over to your Google+ post and interact with you there. Uncheck the truncate box if you want to share the full post (discouraged).</span>
+          </div>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Google Analytics</legend>
+        <div class="control-group">
+          <div class="control-label">Enable Google Analytics</div>
+          <div class="controls">
+            <input id="gaEnabled" type="checkbox" ng-model="gaEnabled" ng-change="setTrackingEnabled(gaEnabled)"/>
+            <span class="help-block">SuperShareBox uses Google Analytics to track the number of posts and failures and alert the developer if the failure rate gets too high.</span>
           </div>
         </div>
       </fieldset>
@@ -112,6 +58,7 @@
           <div class="controls">
             <div class="g-plus" data-height="69" data-href="https://plus.google.com/116475614487294923810" data-rel="author"></div>
             <span class="help-block">I won't be boring.</span>            
+          </div>
         </div>
       </fieldset>
     </form>
