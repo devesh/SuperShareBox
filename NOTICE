@@ -1,0 +1,29 @@
+   Super Share Box
+   Copyright 2012-2013 Devesh Parekh
+
+   This software contains code derived from Twitter Bootstrap, copyright by
+   Twitter. The original software is available from
+      https://github.com/twbs/bootstrap
+
+   This software contains code derived from Underscore.js, copyright by
+   Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors.
+   The original software is available from
+      https://github.com/jashkenas/underscore
+
+   This software contains code derived from the AngularJS, copyright by Google.
+   The original software is available from
+      https://github.com/angular/angular.js
+
+   This software contains code derived from Chrome Platform Analytics, copyright
+   by Google. The original software is available from
+      https://github.com/GoogleChrome/chrome-platform-analytics
+
+   Oauth2 support is provided by the Oauth 2.0 library for Chrome Extensions,
+   which is open source software, written by Boris Smus, and copyright
+   by Google. The original software is available from
+      https://github.com/borismus/oauth2-extensions
+
+   Oauth support is provided by the Oauth library for Chrome Extensions,
+   which is open source software, copyright by Google. The original software
+   is available from
+      http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/oauth_contacts/
