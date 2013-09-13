@@ -138,57 +138,59 @@ angular.module('Background', [])
                     return deferred.promise;
                 },
                 /**
-                 * @return {Promise<Array.<SSBFriend>>} the friends the user has in this network.
-                 */
-                getFriends: function() {
-                    var fb = this;
-                    return fb.authorize()
-                        .then(function() {
-                            var flRequest = $http.get('https://graph.facebook.com/fql?q=SELECT%20flid%2Cuid%20FROM%20friendlist_member%20WHERE%20flid%20IN%20(SELECT%20flid%20from%20friendlist%20WHERE%20owner%3Dme())',
-                                                      { cache : true, headers : { Authorization : 'OAuth ' + fb.oauth.getAccessToken() } });
-                            var friendRequest = $http.get('https://graph.facebook.com/me/friends',
-                                                          { cache : true, headers :
-                                                            { Authorization : 'OAuth ' + fb.oauth.getAccessToken() } });
-                            return flRequest.then(function(response) {
-                                var friendGroups = {};
-                                for (var i = response.data.data.length; --i >= 0;) {
-                                    var flData = response.data.data[i];
-                                    friendGroups[flData.uid] = (friendGroups[flData.uid] || []);
-                                    friendGroups[flData.uid].push(flData.flid);
-                                }
-                                return friendGroups;
-                            }, function(reason) {
-                                Tracker.sendEvent('Facebook', 'Friends', 'failure');
-                                return {};
-                            }).then(function(friendGroups) {
-                                return friendRequest.then(function(response) {
-                                    Tracker.sendEvent('Facebook', 'Friends', 'success');
-                                    return _.map(response.data.data, function(friend) {
-                                        return new SSBFriend(friend.id, friend.name, 'https://graph.facebook.com/' + friend.id + '/picture', _.union(['EVERYONE', 'ALL_FRIENDS', 'FRIENDS_OF_FRIENDS'], friendGroups[friend.id] || []));
-                                    });
-                                }, function(reason) {
-                                    Tracker.sendEvent('Facebook', 'Friends', 'failure');
-                                    return [];
-                                });
-                            });
-                        });
-                },
-                /**
                  * @return {Promise<Array.<SSBFriendList>>} the friend lists/groups the user has in this network.
                  */
-                getFriendLists: function() {
+                getFriendsAndLists: function() {
                     var fb = this;
                     return fb.authorize()
                         .then(function() {
-                            var basicFriends = [new SSBFriendList('EVERYONE', 'Public'), new SSBFriendList('ALL_FRIENDS', 'Friends'), new SSBFriendList('FRIENDS_OF_FRIENDS', 'Friends of Friends'), new SSBFriendList('SELF', 'Self')];
+                            var basicFriendLists = [
+                                new SSBFriendList('EVERYONE', 'Public'),
+                                new SSBFriendList('ALL_FRIENDS', 'Friends'),
+                                new SSBFriendList('FRIENDS_OF_FRIENDS', 'Friends of Friends'),
+                                new SSBFriendList('SELF', 'Self')];
                             return $http.get('https://graph.facebook.com/me/friendlists',
                                              { cache : true, headers : { Authorization : 'OAuth ' + fb.oauth.getAccessToken() } })
                                 .then(function(response) {
                                     Tracker.sendEvent('Facebook', 'FriendLists', 'success');
-                                    return _.union(basicFriends, _.map(response.data.data, function(fl) { return new SSBFriendList(fl.id, fl.name); }));
+                                    return _.union(basicFriendLists, _.map(response.data.data, function(fl) { return new SSBFriendList(fl.id, fl.name); }));
                                 }, function(reason) {
                                     Tracker.sendEvent('Facebook', 'FriendLists', 'failure');
-                                    return basicFriends;
+                                    return basicFriendLists;
+                                }).then(function(friendLists) {
+                                    var flRequest = $http.get('https://graph.facebook.com/fql?q=SELECT%20flid%2Cuid%20FROM%20friendlist_member%20WHERE%20flid%20IN%20(SELECT%20flid%20from%20friendlist%20WHERE%20owner%3Dme())',
+                                                              { cache : true, headers : { Authorization : 'OAuth ' + fb.oauth.getAccessToken() } });
+                                    var friendRequest = $http.get('https://graph.facebook.com/me/friends',
+                                                                  { cache : true, headers :
+                                                                    { Authorization : 'OAuth ' + fb.oauth.getAccessToken() } });
+                                    return flRequest.then(function(response) {
+                                        var friendGroups = {};
+                                        for (var i = response.data.data.length; --i >= 0;) {
+                                            var flData = response.data.data[i];
+                                            friendGroups[flData.uid] = (friendGroups[flData.uid] || []);
+                                            friendGroups[flData.uid].push(flData.flid);
+                                        }
+                                        return friendGroups;
+                                    }, function(reason) {
+                                        Tracker.sendEvent('Facebook', 'Friends', 'failure');
+                                        return {};
+                                    }).then(function(friendGroups) {
+                                        return friendRequest.then(function(response) {
+                                            Tracker.sendEvent('Facebook', 'Friends', 'success');
+                                            return {
+                                                friends: _.map(response.data.data, function(friend) {
+                                                    return new SSBFriend(friend.id, friend.name, 'https://graph.facebook.com/' + friend.id + '/picture', _.union(['EVERYONE', 'ALL_FRIENDS', 'FRIENDS_OF_FRIENDS'], friendGroups[friend.id] || []));
+                                                }),
+                                                friendLists: friendLists
+                                            };
+                                        }, function(reason) {
+                                            Tracker.sendEvent('Facebook', 'Friends', 'failure');
+                                            return {
+                                                friends: [],
+                                                friendLists: friendLists
+                                            };
+                                        });
+                                    });
                                 });
                         });
                 },
@@ -285,14 +287,12 @@ angular.module('Background', [])
                     }, reauthorize);
                     return deferred.promise;
                 },
-                getFriends: function() {
+                getFriendsAndLists: function() {
                     var deferred = $q.defer();
-                    deferred.resolve([]);
-                    return deferred.promise;
-                },
-                getFriendLists: function() {
-                    var deferred = $q.defer();
-                    deferred.resolve([new SSBFriendList('PUBLIC', 'Public')]);
+                    deferred.resolve({
+                        friends: [],
+                        friendLists: [ new SSBFriendList('PUBLIC', 'Public') ]
+                    });
                     return deferred.promise;
                 },
                 post: function(post) {
@@ -326,7 +326,7 @@ angular.module('Background', [])
                 }
             }
         ]
-        instance.getFriendLists = function() {
+        instance.getFriendsAndLists = function() {
             return Settings.get().then(function(settings) {
                 return $q.all(_.map(networks, function(network) {
                     var enabled = settings.enabledNetworks[network.id];
@@ -338,34 +338,23 @@ angular.module('Background', [])
                     if (!enabled) {
                         return [];
                     }
-                    return network.getFriendLists().then(function(friendLists) {
-                        return _.map(friendLists, function(friendList) {
-                            return new SSBFriendList(network.id + ':' + friendList.id, network.name + ': ' + friendList.name);
-                        });
+                    return network.getFriendsAndLists().then(function(friendsAndLists) {
+                        return {
+                            friends: _.map(friendsAndLists.friends, function(friend) {
+                                return new SSBFriend(network.id + ':' + friend.id, network.name + ': ' + friend.name, friend.picUrl, _.map(friend.friendLists, function(friendList) {
+                                    return network.id + ':' + friendList;
+                                }));
+                            }),
+                            friendLists: _.map(friendsAndLists.friendLists, function(friendList) {
+                                return new SSBFriendList(network.id + ':' + friendList.id, network.name + ': ' + friendList.name);
+                            })
+                        };
                     });
-                })).then(function(friendListsArrays) {
-                    return _.flatten(friendListsArrays);
-                });
-            }, function(error) { alert(error); });
-        };
-        instance.getFriends = function() {
-            return Settings.get().then(function(settings) {
-                return $q.all(_.map(networks, function(network) {
-                    // TODO(devesh): Instead of just returning no friends the first time we make the request (before
-                    // the user has confirmed that they want to enable this network), combine getFriends and
-                    // getFriendLists.
-                    if (!settings.enabledNetworks[network.id]) {
-                        return [];
-                    }
-                    return network.getFriends().then(function(friends) {
-                        return _.map(friends, function(friend) {
-                            return new SSBFriend(network.id + ':' + friend.id, network.name + ': ' + friend.name, friend.picUrl, _.map(friend.friendLists, function(friendList) {
-                                return network.id + ':' + friendList;
-                            }));
-                        });
-                    });
-                })).then(function(friendListsArrays) {
-                    return _.flatten(friendListsArrays);
+                })).then(function(friendsAndListsArray) {
+                    return {
+                        friends: _.flatten(_.pluck(friendsAndListsArray, 'friends')),
+                        friendLists: _.flatten(_.pluck(friendsAndListsArray, 'friendLists'))
+                    };
                 });
             }, function(error) { alert(error); });
         };
@@ -411,14 +400,7 @@ function BackgroundCtrl(Networks, $timeout, Tracker) {
                 if ((request.message || {}).postUrl) {
                     Networks.post(request.message);
                 } else if (request.message == 'GET_FRIENDS') {
-                    Networks.getFriends().then(function(response) {
-                        port.postMessage({
-                            responseId: request.messageId,
-                            response: response
-                        });
-                    });
-                } else if (request.message == 'GET_FRIENDLISTS') {
-                    Networks.getFriendLists().then(function(response) {
+                    Networks.getFriendsAndLists().then(function(response) {
                         port.postMessage({
                             responseId: request.messageId,
                             response: response

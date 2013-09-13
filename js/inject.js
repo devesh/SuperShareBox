@@ -265,12 +265,9 @@
                 isPost = true;
             } else if (uri.indexOf('socialgraph/lookup/circles') >= 0) {
                 isCircles = true;
-                callExtension('GET_FRIENDS', function(friends) {
-                    friendsToAdd = friends;
-                    finishCircles();
-                });
-                callExtension('GET_FRIENDLISTS', function(friendLists) {
-                    friendListsToAdd = friendLists;
+                callExtension('GET_FRIENDS', function(friendsAndLists) {
+                    friendsToAdd = friendsAndLists.friends;
+                    friendListsToAdd = friendsAndLists.friendLists;
                     finishCircles();
                 });
             } // TODO(devesh): Also handle socialgraph/lookup/hovercards.

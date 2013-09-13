@@ -75,10 +75,14 @@ ChromeExOAuth.initBackgroundPage = function(oauth_config) {
         changeInfo.url.substr(0, url_match.length) === url_match &&
         changeInfo.url != tabs[tabId] &&
         window.chromeExOAuthRequestingAccess == false) {
-      chrome.tabs.create({ 'url' : changeInfo.url }, function(tab) {
-        tabs[tab.id] = tab.url;
-        chrome.tabs.remove(tabId);
-      });
+        chrome.tabs.query(
+            { currentWindow: true, active: true },
+            function(tabArray) {
+                chrome.tabs.create({ 'url' : changeInfo.url, openerTabId: tabArray[0].id }, function(tab) {
+                    tabs[tab.id] = tab.url;
+                    chrome.tabs.remove(tabId);
+                });
+            });
     }
   });
 
@@ -101,7 +105,12 @@ ChromeExOAuth.prototype.authorize = function(callback, reauthorize) {
     window.chromeExOAuthOnAuthorize = function(token, secret) {
       callback(token, secret);
     };
-    chrome.tabs.create({ 'url' :chrome.extension.getURL(this.callback_page) });
+    var self = this;
+    chrome.tabs.query(
+        { currentWindow: true, active: true },
+        function (tabArray) {
+            chrome.tabs.create({ 'url' :chrome.extension.getURL(self.callback_page), openerTabId: tabArray[0].id });
+        });
   }
 };
 

@@ -15,7 +15,7 @@
  */
 {
     "name": "Super Share Box",
-    "version": "20",
+    "version": "21",
     "manifest_version": 2,
     "minimum_chrome_version": "23",
 
@@ -71,7 +71,6 @@
 
     "permissions": [
         "storage",
-        "tabs",
         "https://graph.facebook.com/",
         "https://api.twitter.com/",
         "https://www.google-analytics.com/"
