@@ -44,9 +44,15 @@
 <h3>
 <a name="how-super-share-box-fixes-social-network-lock-in" class="anchor" href="#how-super-share-box-fixes-social-network-lock-in"><span class="octicon octicon-link"></span></a>How <strong>Super Share Box</strong> Fixes Social Network Lock-In</h3>
 
-<p><strong>Super Share Box</strong> is an experiment in breaking lock-in. Instead of directly copying your friends to a new social network, it automatically shares links to your posts on the new social network to your old social networks where your friends can see them (in the Google+ case, by choosing your friends and friend lists from the old social network directly in the share box). Since the posts on the old social network will just contain truncated text and a link, your friends on the old social network will have to click through to the new one to see your full post, and they are more likely to interact it with it there.</p>
+<p><strong>Super Share Box</strong> is an experiment in breaking lock-in. Instead of directly copying your friends to a new social network, it automatically shares links to your posts on the new social network to your old social networks where your friends can see them (in the Google+ case, by choosing your individual friends and friend lists from the old social network directly in the share box). Since the posts on the old social network will just contain truncated text and a link, your friends on the old social network will have to click through to the new one to see your full post, and they are more likely to interact it with it there.</p>
 
-<p><strong>Super Share Box</strong> currently only supports Google+ as the new social network and Facebook and Twitter as the old social networks. The basic concept should translate into any combination of from/to networks, and the goal is to generalize the extension to simplify migration to any social network. Pull requests appreciated.</p>
+<p><strong>Super Share Box</strong> currently only supports Google+ as the new social network and Facebook and Twitter as the old social networks. The basic concept should translate into any combination of from/to networks, and the goal is to generalize the extension to simplify migration to any social network. Pull requests appreciated.
+<img src="images/GPlus.png" alt="Share from the share box"><img src="images/Facebook.png" alt="A link goes to Facebook"><img src="images/Twitter.png" alt="A link goes to Twitter"></p>
+
+<h3>
+<a name="how-it-works" class="anchor" href="#how-it-works"><span class="octicon octicon-link"></span></a>How it Works</h3>
+
+<p><strong>Super Share Box</strong> wraps XMLHttpRequest in the iframe that contains the Google+ share box (it works on Google+, YouTube, and any other page with the +1 Button), looks for the request to load circles, and inserts pseudo-circles and pseudo-friends from your other social networks into the response. Then it intercepts post requests, extracts any pseudo-circles and pseudo-friends in them, and posts to them in the social network they came from.</p>
 
 <h3>
 <a name="unsolved-problems-in-social-network-lock-in" class="anchor" href="#unsolved-problems-in-social-network-lock-in"><span class="octicon octicon-link"></span></a>Unsolved Problems in Social Network Lock-In</h3>
