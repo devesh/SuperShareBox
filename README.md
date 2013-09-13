@@ -1,22 +1,18 @@
 Super Share Box
 ===============
 
-Exposes friends and friend groups from other social networks in the Google+ share box by wrapping the circles XHR.
+Exposes friends and friend groups from other social networks (currently Facebook and Twitter) in the Google+
+share box by wrapping the circles XHR.
 Wraps the post message XHR to determine whether the post should be shared to those other social networks.
 Posts links to the Google+ post on the other social networks.
 
-The code is currently very hacky. A few next steps:
-- Clean up the code, especially the hacked-together oauth code mangled from the
-  [oauth2-extensions](https://github.com/borismus/oauth2-extensions) repository by Boris Smus and the XHR wrapper hacked
-  out of [Firebug Lite](http://code.google.com/p/fbug/source/browse/lite/branches/firebug1.5/content/lite/xhr.js) that
-  does everything.
-- Add more social networks.
-- Fix the hovercard for external "circles"
-- Remove external "circles" from places they don't belong, like the circles editor.
+Pull requests appreciated. Suggestions:
+- Clean up the code (even comments and style fixes) and write tests.
+- Add more social networks to share to.
+- Add support for sharing from social networks besides Google+.
 - Localization.
-- UI cleanup.
-- Delete corresponding Facebook post when the user deletes a Google+ post.
-- Firefox extension
+- Firefox extension.
+- Anything in the issues list.
 
 Installing
 ==========
