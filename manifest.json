@@ -64,7 +64,8 @@
     "content_security_policy": "script-src 'self' https://apis.google.com; frame-src 'self' https://apis.google.com https://accounts.google.com; style-src 'self' 'unsafe-inline'; img-src 'self' https://ssl.gstatic.com; connect-src https://www.google-analytics.com https://graph.facebook.com https://api.twitter.com; default-src 'self'",
 
     "web_accessible_resources": [
-        "js/inject.js"
+        "js/inject.js",
+		"oauth2/oauth2.html"
     ],
 
     "options_page": "options.html",
