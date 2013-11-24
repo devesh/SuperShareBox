@@ -65,7 +65,7 @@
 
     "web_accessible_resources": [
         "js/inject.js",
-		"oauth2/oauth2.html"
+        "oauth2/oauth2.html"
     ],
 
     "options_page": "options.html",
