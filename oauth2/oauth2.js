@@ -112,7 +112,7 @@ OAuth2.prototype.finishAuth = function() {
   var authorizationCode = null;
   var that = this;
 
-  // Loop through existing extension views and excute any stored callbacks.
+  // Loop through existing extension views and execute any stored callbacks.
   function callback(error) {
     var views = chrome.extension.getViews();
     for (var i = 0, view; view = views[i]; i++) {
