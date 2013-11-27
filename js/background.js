@@ -336,7 +336,10 @@ angular.module('Background', [])
                         Settings.set(settings);
                     }
                     if (!enabled) {
-                        return [];
+                        return {
+                            friends: [],
+                            friendLists: []
+                        };
                     }
                     return network.getFriendsAndLists().then(function(friendsAndLists) {
                         return {

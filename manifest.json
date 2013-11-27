@@ -65,6 +65,7 @@
 
     "web_accessible_resources": [
         "js/inject.js",
+        "oauth/chrome_ex_oauth.html",
         "oauth2/oauth2.html"
     ],
 
