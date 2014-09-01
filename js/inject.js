@@ -102,7 +102,7 @@
 
         var makeCircle = function(id, name) {
             return [[id], [name,,,,,,,,,2,2,,'z' + id,0,1,1]];
-        }
+        };
 
         var makeFriend = function(id, name, friendLists, pic) {
             var friend = [[,,id],[],[name,,,,,,,,pic],[]];
@@ -110,11 +110,11 @@
                 friend[3].push([2,,[friendLists[i]]]);
             }
             return friend;
-        }
+        };
 
         var readyToProcessCircles = function() {
             return (friendsToAdd && friendListsToAdd && circlesResponse);
-        }
+        };
 
         var finishCircles = function() {
             if (readyToProcessCircles()) {
@@ -122,17 +122,17 @@
                 var circles = eval(circlesResponse.substring(startIndex));
                 for (var i = friendsToAdd.length; --i >= 0;) {
                     var friend = friendsToAdd[i];
-                    circles[0][1][2].push(makeFriend(friend.id, friend.name, friend.friendLists, friend.picUrl));
+                    circles[0][0][2].push(makeFriend(friend.id, friend.name, friend.friendLists, friend.picUrl));
                 }
                 for (var i = friendListsToAdd.length; --i >= 0;) {
                     var friendList = friendListsToAdd[i];
-                    circles[0][1][1].push(makeCircle(friendList.id, friendList.name));
+                    circles[0][0][1].push(makeCircle(friendList.id, friendList.name));
                 }
                 self.responseText = self.response = circlesResponse.substring(0, startIndex) + JSON.stringify(circles);
                 self.readyState = 4;
                 self.onreadystatechange();
             }
-        }
+        };
 
         var updateSelfProperties = function() {
             for (var propName in xhrRequest) {
@@ -218,7 +218,7 @@
                 var createdPost = eval(xhrRequest.responseText.substring(xhrRequest.responseText.indexOf('[')));
                 var postDetails = createdPost[0][1][1][0][0];
                 var userPicUrl = postDetails[18] || '//lh5.googleusercontent.com/E4Mt_NjeN66Z1TAHbfRB5NuBDHlGbxr6eIoe5EPvZmM3QJmk9cWEOv1MKTyuM0iM0HYjnHjT';
-                if (userPicUrl.indexOf('http') != 0) {
+                if (userPicUrl.indexOf('http') !== 0) {
                     userPicUrl = 'https:' + userPicUrl;
                 }
                 // 14 has the text with referenced people turned into @ strings.
@@ -261,7 +261,7 @@
             // If I don't copy url before calling indexOf, the onepick dialog doesn't work.
             // I don't know why.
             var uri = url.toString();
-            if (uri.indexOf('_/sharebox/post') == 0) {
+            if (uri.indexOf('_/sharebox/post') === 0) {
                 isPost = true;
             } else if (uri.indexOf('socialgraph/lookup/circles') >= 0) {
                 isCircles = true;
@@ -303,7 +303,7 @@
                         postData[37][0].splice(i, 1);
                     }
                 }
-                if (postData[37][0].length == 0) {
+                if (postData[37][0].length === 0) {
                     alert('You must share to at least one Google+ circle to make the post visible.');
                     self.readyState = 4;
                     self.status = 400;
@@ -326,7 +326,7 @@
                         finishXHR();
                     } catch (e) {
                     }
-	        }
+                }
             }
         };
 
