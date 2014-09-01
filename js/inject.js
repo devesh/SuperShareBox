@@ -216,7 +216,7 @@
         var finishXHR = function() {
             if (isPost && friends.length) {
                 var createdPost = eval(xhrRequest.responseText.substring(xhrRequest.responseText.indexOf('[')));
-                var postDetails = createdPost[0][1][1][0][0];
+                var postDetails = createdPost[0][0][1][0][0];
                 var userPicUrl = postDetails[18] || '//lh5.googleusercontent.com/E4Mt_NjeN66Z1TAHbfRB5NuBDHlGbxr6eIoe5EPvZmM3QJmk9cWEOv1MKTyuM0iM0HYjnHjT';
                 if (userPicUrl.indexOf('http') !== 0) {
                     userPicUrl = 'https:' + userPicUrl;
